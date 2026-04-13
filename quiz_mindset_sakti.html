@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — 5 Mindset Sakti & 3 Mindset Toxic</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:#0C1A3A; --blue:#1840A0; --lblue:#2A5DD8; --gold:#D4A843; --goldl:#FBF0D0;
+  --white:#FFFFFF; --offwhite:#F7F8FC; --gray:#E8ECF5; --mid:#7A849E; --dark:#1A2240;
+  --green:#15803D; --greenl:#DCFCE7; --red:#B91C1C; --redl:#FEE2E2;
+}
+
+body { font-family:'DM Sans',sans-serif; background:var(--navy); min-height:100vh; color:var(--dark); overflow-x:hidden; }
+body::before {
+  content:''; position:fixed; inset:0;
+  background: radial-gradient(ellipse 80% 50% at 20% 20%,rgba(26,64,160,.35) 0%,transparent 60%),
+              radial-gradient(ellipse 60% 40% at 80% 80%,rgba(212,168,67,.12) 0%,transparent 50%);
+  pointer-events:none; z-index:0;
+}
+
+.screen { display:none; position:relative; z-index:1; min-height:100vh; }
+.screen.active { display:flex; flex-direction:column; }
+#screen-intro, #screen-password { align-items:center; justify-content:center; padding:24px 20px; text-align:center; }
+
+.intro-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(212,168,67,.15); border:1px solid rgba(212,168,67,.4);
+  color:var(--gold); font-family:'Syne',sans-serif; font-size:11px; font-weight:700;
+  letter-spacing:2px; text-transform:uppercase; padding:6px 16px; border-radius:100px; margin-bottom:28px;
+}
+.intro-title { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(28px,7vw,48px); color:var(--white); line-height:1.05; margin-bottom:8px; letter-spacing:-1px; }
+.intro-title .accent { color:var(--gold); display:block; }
+.intro-subtitle { font-size:16px; color:rgba(255,255,255,.55); margin-bottom:36px; line-height:1.6; max-width:420px; }
+
+.stats-row { display:flex; gap:12px; justify-content:center; margin-bottom:40px; flex-wrap:wrap; }
+.stat-pill { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:10px 20px; color:var(--white); }
+.stat-num { font-family:'Syne',sans-serif; font-weight:800; font-size:22px; color:var(--gold); line-height:1; }
+.stat-label { font-size:11px; color:rgba(255,255,255,.45); margin-top:2px; text-transform:uppercase; letter-spacing:1px; }
+
+.name-section { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:16px; padding:24px; width:100%; max-width:400px; margin-bottom:28px; }
+.name-label { font-size:12px; font-weight:600; color:var(--gold); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:10px; text-align:left; }
+.name-input { width:100%; background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.15); border-radius:10px; padding:12px 16px; font-family:'DM Sans',sans-serif; font-size:16px; color:var(--white); outline:none; transition:border-color .2s; }
+.name-input::placeholder { color:rgba(255,255,255,.3); }
+.name-input:focus { border-color:var(--gold); }
+
+.sections-preview { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:32px; max-width:440px; }
+.section-chip { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:8px; padding:6px 12px; font-size:11px; color:rgba(255,255,255,.5); font-weight:500; }
+.section-chip .dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--gold); margin-right:5px; vertical-align:middle; }
+
+.btn-start { background:var(--gold); color:var(--navy); font-family:'Syne',sans-serif; font-size:15px; font-weight:800; padding:16px 48px; border:none; border-radius:14px; cursor:pointer; transition:transform .15s,box-shadow .15s; box-shadow:0 4px 24px rgba(212,168,67,.35); }
+.btn-start:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(212,168,67,.45); }
+
+/* QUIZ */
+#screen-quiz { background:var(--offwhite); }
+.quiz-header { background:var(--navy); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; position:sticky; top:0; z-index:100; box-shadow:0 2px 20px rgba(0,0,0,.3); }
+.quiz-title-sm { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--white); }
+.quiz-name-sm { font-size:11px; color:rgba(255,255,255,.45); margin-top:1px; }
+
+.timer-block { display:flex; flex-direction:column; align-items:center; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:6px 14px; min-width:80px; }
+.timer-label { font-size:9px; color:rgba(255,255,255,.4); text-transform:uppercase; letter-spacing:1px; }
+.timer-val { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; color:var(--gold); letter-spacing:1px; line-height:1.1; transition:color .3s; }
+.timer-val.warning { color:#FCA5A5; }
+
+.progress-bar-wrap { background:rgba(255,255,255,.1); border-radius:100px; height:4px; overflow:hidden; width:100%; max-width:140px; }
+.progress-bar-fill { height:100%; background:var(--gold); border-radius:100px; transition:width .4s; }
+
+.quiz-body { padding:28px 20px 120px; max-width:720px; margin:0 auto; }
+.q-counter { font-size:12px; font-weight:600; color:var(--mid); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; }
+.q-number-tag { display:inline-block; background:var(--navy); color:var(--gold); font-family:'Syne',sans-serif; font-size:11px; font-weight:700; padding:3px 10px; border-radius:6px; margin-bottom:14px; }
+.q-text { font-family:'Syne',sans-serif; font-size:clamp(16px,3.8vw,21px); font-weight:700; color:var(--dark); line-height:1.45; margin-bottom:24px; }
+
+.choices-list { display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+.choice-btn { display:flex; align-items:flex-start; gap:14px; background:var(--white); border:2px solid var(--gray); border-radius:14px; padding:16px 18px; cursor:pointer; text-align:left; font-family:'DM Sans',sans-serif; font-size:15px; color:var(--dark); line-height:1.4; transition:border-color .15s,background .15s,transform .1s; width:100%; }
+.choice-btn:hover:not(:disabled) { border-color:var(--lblue); background:#EEF3FF; transform:translateX(3px); }
+.choice-btn:disabled { cursor:default; }
+.choice-btn.correct { border-color:var(--green); background:var(--greenl); }
+.choice-btn.wrong   { border-color:var(--red);   background:var(--redl); }
+.choice-letter { flex-shrink:0; width:30px; height:30px; border-radius:50%; background:var(--gray); font-family:'Syne',sans-serif; font-weight:700; font-size:13px; display:flex; align-items:center; justify-content:center; color:var(--mid); transition:background .15s,color .15s; }
+.choice-btn.correct .choice-letter { background:var(--green); color:var(--white); }
+.choice-btn.wrong   .choice-letter { background:var(--red);   color:var(--white); }
+
+.feedback-box { border-radius:12px; padding:14px 18px; font-size:14px; line-height:1.6; margin-bottom:20px; display:none; }
+.feedback-box.correct { background:var(--greenl); color:var(--green); border:1px solid #BBF7D0; }
+.feedback-box.wrong   { background:var(--redl);   color:var(--red);   border:1px solid #FECACA; }
+
+.btn-next { background:var(--navy); color:var(--white); font-family:'Syne',sans-serif; font-size:14px; font-weight:700; padding:14px 36px; border:none; border-radius:12px; cursor:pointer; display:none; transition:transform .15s,background .15s; }
+.btn-next:hover { background:var(--blue); transform:translateY(-1px); }
+
+/* RESULT */
+#screen-result { background:var(--navy); align-items:center; justify-content:center; padding:40px 20px; text-align:center; }
+.result-badge { width:100px; height:100px; border-radius:50%; background:rgba(212,168,67,.15); border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:48px; margin:0 auto 24px; }
+.result-score { font-family:'Syne',sans-serif; font-size:clamp(56px,15vw,88px); font-weight:800; color:var(--gold); line-height:1; }
+.result-label { font-size:18px; color:rgba(255,255,255,.6); margin-top:4px; margin-bottom:24px; }
+.result-msg { font-family:'Syne',sans-serif; font-size:clamp(20px,5vw,28px); font-weight:800; color:var(--white); margin-bottom:8px; }
+.result-sub { font-size:15px; color:rgba(255,255,255,.45); max-width:400px; margin:0 auto 36px; line-height:1.6; }
+.result-stats { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:36px; }
+.r-stat { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:12px 20px; }
+.r-stat-num { font-family:'Syne',sans-serif; font-weight:800; font-size:24px; }
+.r-stat-num.g { color:#4ADE80; } .r-stat-num.r { color:#F87171; } .r-stat-num.go { color:var(--gold); }
+.r-stat-lbl { font-size:11px; color:rgba(255,255,255,.4); text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
+
+.btn-retake { background:transparent; color:rgba(255,255,255,.55); font-family:'DM Sans',sans-serif; font-size:14px; border:1px solid rgba(255,255,255,.15); border-radius:10px; padding:12px 28px; cursor:pointer; margin-top:12px; transition:color .2s,border-color .2s; }
+.btn-retake:hover { color:var(--white); border-color:rgba(255,255,255,.35); }
+.timeout-banner { background:rgba(185,28,28,.15); border:1px solid rgba(185,28,28,.4); border-radius:10px; padding:10px 20px; color:#FCA5A5; font-size:13px; font-weight:600; margin-bottom:20px; display:none; }
+
+.review-list { width:100%; max-width:620px; text-align:left; margin-top:32px; }
+.review-item { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:14px 18px; margin-bottom:10px; }
+.review-q { font-size:13px; color:rgba(255,255,255,.7); margin-bottom:6px; line-height:1.4; }
+.review-a { font-size:12px; font-weight:600; }
+.review-a.ok { color:#4ADE80; } .review-a.err { color:#F87171; }
+
+@media(max-width:480px){ .progress-bar-wrap { display:none; } }
+</style>
+</head>
+<body>
+
+<!-- PASSWORD -->
+<div id="screen-password" class="screen active">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px 20px;text-align:center;">
+    <div class="intro-badge"><span>●</span> 富貴Lestari Memorial Park</div>
+    <div class="intro-title">Mindset<span class="accent">Sakti</span></div>
+    <div class="intro-subtitle">Masukkan kode akses untuk melanjutkan.</div>
+    <div class="name-section">
+      <div class="name-label">Kode Akses</div>
+      <input type="password" id="pw-input" class="name-input" placeholder="Kode akses..."
+        maxlength="30" onkeydown="if(event.key==='Enter')checkPassword()">
+      <div id="pw-error" style="color:#FCA5A5;font-size:13px;margin-top:10px;min-height:18px;"></div>
+    </div>
+    <button class="btn-start" onclick="checkPassword()">Masuk →</button>
+  </div>
+</div>
+
+<!-- INTRO -->
+<div id="screen-intro" class="screen">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px 20px;text-align:center;">
+    <div class="intro-badge"><span>●</span> 富貴Lestari Memorial Park</div>
+    <div class="intro-title">5 Mindset Sakti<span class="accent">& 3 Mindset Toxic</span></div>
+    <div class="intro-subtitle">Bukan hafalan — uji kemampuan Anda menerapkan prinsip mindset dalam situasi kerja nyata.</div>
+    <div class="stats-row">
+      <div class="stat-pill"><div class="stat-num">20</div><div class="stat-label">Soal</div></div>
+      <div class="stat-pill"><div class="stat-num">10'</div><div class="stat-label">Waktu</div></div>
+      <div class="stat-pill"><div class="stat-num">4</div><div class="stat-label">Pilihan</div></div>
+    </div>
+    <div class="sections-preview">
+      <div class="section-chip"><span class="dot"></span>Fondasi Mindset</div>
+      <div class="section-chip"><span class="dot"></span>Saya Bisa</div>
+      <div class="section-chip"><span class="dot"></span>Tanggung Jawab</div>
+      <div class="section-chip"><span class="dot"></span>Saya Fight</div>
+      <div class="section-chip"><span class="dot"></span>Kaizen</div>
+      <div class="section-chip"><span class="dot"></span>Fokus Hasil</div>
+      <div class="section-chip"><span class="dot"></span>Mindset Toxic</div>
+    </div>
+    <div class="name-section">
+      <div class="name-label">Nama Peserta</div>
+      <input type="text" id="name-input" class="name-input" placeholder="Tulis nama lengkap Anda..."
+        maxlength="60" onkeydown="if(event.key==='Enter')startQuiz()">
+    </div>
+    <button class="btn-start" onclick="startQuiz()">Mulai Quiz →</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="screen-quiz" class="screen">
+  <div class="quiz-header">
+    <div>
+      <div class="quiz-title-sm">富貴Lestari Memorial Park</div>
+      <div class="quiz-name-sm" id="hdr-name"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-fill" style="width:0%"></div></div>
+        <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:3px;text-align:right;" id="prog-text">0 / 20</div>
+      </div>
+      <div class="timer-block">
+        <div class="timer-label">Sisa Waktu</div>
+        <div class="timer-val" id="timer-display">10:00</div>
+      </div>
+    </div>
+  </div>
+  <div class="quiz-body">
+    <div class="q-counter" id="q-counter"></div>
+    <div class="q-number-tag" id="q-tag"></div>
+    <div class="q-text" id="q-text"></div>
+    <div class="choices-list" id="choices-list"></div>
+    <div class="feedback-box" id="feedback-box"></div>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">Lanjut →</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="screen-result" class="screen">
+  <div id="timeout-banner" class="timeout-banner">⏰ Waktu habis — quiz dihentikan otomatis.</div>
+  <div class="result-badge" id="result-emoji">🏆</div>
+  <div class="result-score" id="result-score">0</div>
+  <div class="result-label">/ 100</div>
+  <div class="result-msg" id="result-msg"></div>
+  <div class="result-sub" id="result-sub"></div>
+  <div class="result-stats">
+    <div class="r-stat"><div class="r-stat-num g" id="res-correct">0</div><div class="r-stat-lbl">Benar</div></div>
+    <div class="r-stat"><div class="r-stat-num r" id="res-wrong">0</div><div class="r-stat-lbl">Salah</div></div>
+    <div class="r-stat"><div class="r-stat-num go" id="res-time">—</div><div class="r-stat-lbl">Sisa Waktu</div></div>
+  </div>
+  <button class="btn-start" onclick="resetQuiz()">Kerjakan Ulang</button><br>
+  <button class="btn-retake" onclick="toggleReview()">Lihat Pembahasan ▾</button>
+  <div class="review-list" id="review-list" style="display:none;"></div>
+</div>
+
+<script>
+const PASS = 'Mindset2026';
+
+const BANK = [
+  // ── FONDASI ──
+  {
+    q:"Seorang karyawan baru sudah mengikuti pelatihan teknis dan memahami prosedur kerja, namun selalu ragu dan takut salah saat harus mengambil keputusan sendiri. Apa yang paling perlu diperbaiki terlebih dahulu?",
+    c:["Tambahkan pelatihan teknis lanjutan agar ia makin mahir","Perbaiki mindset-nya — skill tidak akan bekerja optimal jika operating system bermasalah","Berikan SOP yang lebih lengkap agar ia tidak perlu banyak membuat keputusan","Tunjuk pendamping yang bisa selalu hadir di setiap langkahnya"],
+    a:1, exp:"Mindset adalah operating system. Skill (software) apapun tidak akan bekerja optimal jika mindset-nya bermasalah. Perbaiki OS dulu — baru skill bisa bekerja dengan kapasitas penuh."
+  },
+  {
+    q:"Seekor gajah dewasa yang secara fisik sangat kuat tidak mau mencabut tonggak kecil yang mengikatnya. Situasi ini paling tepat menggambarkan seseorang yang...",
+    c:["Tidak termotivasi karena tidak ada tujuan yang jelas","Masih terikat keyakinan lama bahwa ia tidak bisa, meski kemampuannya sudah jauh melampaui keyakinan itu","Memilih zona nyaman karena sudah merasa cukup puas","Butuh pelatih eksternal sebelum bisa mengambil tindakan"],
+    a:1, exp:"Ini ilustrasi mental block — keyakinan lama yang tertanam sejak kecil terus menghalangi tindakan, meski kemampuan nyata sudah jauh berkembang. Banyak karyawan baru sebenarnya sudah mampu secara teknis, tapi keyakinan lama yang menghambat mereka untuk benar-benar bertindak."
+  },
+  {
+    q:"Seorang manajer baru kinerjanya terus meningkat, namun ia masih merasa 'bukan tipe pemimpin'. Dari perspektif materi mindset, apa yang paling tepat menjelaskan kondisi ini?",
+    c:["Ia membutuhkan lebih banyak pengalaman sebelum benar-benar percaya diri","Identitas negatif yang dibentuk lingkungan lama masih dominan, meski potensi sejatinya sudah muncul","Ia terlalu perfeksionis sehingga tidak pernah merasa cukup","Ia perlu validasi dari atasan untuk membangun kepercayaan diri"],
+    a:1, exp:"Seperti singa yang dibesarkan bersama babi hutan — lingkungan lama bisa menanamkan identitas yang salah. Potensi sudah ada, tapi narasi lama (\"saya bukan tipe pemimpin\") masih mendominasi cara pandangnya tentang diri sendiri."
+  },
+
+  // ── SAYA BISA ──
+  {
+    q:"Seorang karyawan baru berkata: \"Saya sudah tiga kali melakukan kesalahan dalam tugas ini, jadi saya memang tidak cocok di posisi ini.\" Respons yang paling mencerminkan Mindset Sakti #1 adalah...",
+    c:["Menyarankan ia mengajukan mutasi ke divisi lain yang lebih cocok","Kurangi tanggung jawabnya agar tidak terlalu banyak peluang membuat kesalahan","Menantang bahwa keyakinan 'tidak cocok' itu adalah pilihan, bukan fakta — tiga kesalahan adalah data pelajaran, bukan bukti ketidakmampuan","Selalu dampingi ia agar tidak sempat membuat kesalahan lagi"],
+    a:2, exp:"Mindset 'tidak bisa' membuat otak mencari bukti kegagalan dan menghentikan tindakan. Tiga kali kesalahan bukan bukti tidak cocok — itu adalah proses belajar. Keyakinan bukan fakta; itu pilihan yang bisa diubah."
+  },
+  {
+    q:"Ketika seseorang memiliki Mindset 'Saya Bisa', apa yang terjadi saat ia menghadapi kegagalan atau kritik dari atasan?",
+    c:["Ia merasa tersinggung dan butuh waktu lama untuk pulih","Ia melihat kritik sebagai pelajaran dan segera mencari cara untuk memperbaikinya","Ia menurunkan standar kerjanya agar lebih jarang mendapat kritik","Ia menghindari tugas-tugas yang berisiko mendapat penilaian negatif"],
+    a:1, exp:"Mindset 'Saya Bisa' mengubah cara otak memproses kegagalan: bukan bukti ketidakmampuan, tapi data untuk perbaikan. Penolakan = pelajaran. Energi mengalir ke solusi, bukan ke defensif atau menghindar."
+  },
+  {
+    q:"Dua karyawan baru dengan latar belakang pendidikan yang sama sama-sama mengalami 5 kali teguran dari supervisor dalam sebulan pertama. Karyawan A mulai pasif dan menghindari tugas baru. Karyawan B terus mencoba dengan pendekatan yang diperbaiki. Perbedaan mendasar antara keduanya terletak pada...",
+    c:["Jumlah pengalaman kerja sebelumnya","Kualitas pelatihan onboarding yang diterima","Keyakinan 'saya bisa' yang menentukan apakah otak mencari solusi atau mencari alasan untuk berhenti","Kedekatan hubungan dengan supervisor"],
+    a:2, exp:"Skill sama, produk sama, situasi sama — hasilnya beda. Perbedaannya ada di mindset: Distributor B memiliki keyakinan bahwa ada cara yang lebih baik, sehingga otaknya aktif mencari solusi bukan mencari alasan untuk berhenti."
+  },
+
+  // ── TANGGUNG JAWAB ──
+  {
+    q:"Tim tidak mencapai target kerja bulan ini. Seorang anggota berkata: \"Susah capai target karena sistemnya sering error dan koordinasi antar divisi lambat.\" Respons yang mencerminkan Mindset Tanggung Jawab adalah...",
+    c:["Setuju bahwa kondisi ekonomi memang sedang sulit dan targetnya perlu disesuaikan","Meminta audit: aktivitas apa yang sudah dilakukan, mana yang menghasilkan, dan apa yang bisa diperbaiki minggu depan","Mencari anggota tim baru yang lebih termotivasi","Memberikan motivasi ekstra agar semangat tim kembali"],
+    a:1, exp:"Mindset Tanggung Jawab tidak mencari kambing hitam (ekonomi, pasar, cuaca). Ia mengaudit: apa yang sudah saya lakukan? Aktivitas mana yang produktif? Apa yang bisa saya kontrol dan perbaiki? Fokus pada lingkaran kendali diri."
+  },
+  {
+    q:"Apa yang terjadi pada kemampuan seseorang untuk berubah ketika ia terus-menerus menyalahkan orang atau kondisi lain atas masalahnya?",
+    c:["Kemampuannya berubah justru meningkat karena ia sadar ada faktor eksternal yang perlu diatasi","Kemampuannya berubah berkurang karena kekuatan untuk berubah diserahkan ke pihak luar yang tidak bisa dikontrolnya","Tidak ada dampak — menyalahkan adalah cara alami manusia memproses masalah","Ia menjadi lebih termotivasi untuk membuktikan bahwa faktor luar itu salah"],
+    a:1, exp:"Ini inti dari bahaya Mindset Toxic Blame: ketika Anda menyalahkan pihak luar, Anda secara tidak sadar memindahkan kekuatan untuk berubah ke pihak yang tidak bisa Anda kontrol. Hasilnya: Anda terjebak di pola yang sama."
+  },
+
+  // ── SAYA FIGHT ──
+  {
+    q:"Seorang karyawan baru sudah 3 bulan merasa pekerjaannya terlalu berat dan mulai mempertimbangkan untuk resign. Langkah yang paling mencerminkan Mindset 'Saya Fight' adalah...",
+    c:["Ajukan cuti panjang agar pikiran lebih fresh sebelum melanjutkan","Kembali ke tujuan awal yang membuatnya bergabung, perkuat 'mengapa', lalu lanjutkan dengan strategi yang dievaluasi","Minta keringanan tugas dari atasan agar tidak terlalu terbebani","Turunkan standar kualitas kerja agar target terasa lebih mudah dicapai"],
+    a:1, exp:"'Saya Fight' bukan keras kepala — ini tentang bertahan bermakna. Kunci fight yang kuat adalah terhubung kembali dengan PURPOSE. Fight tanpa 'mengapa' cepat kehabisan bahan bakar. Dengan 'mengapa' yang kuat, cara (how) selalu bisa ditemukan."
+  },
+  {
+    q:"Seorang supervisor memimpin tim yang down setelah beberapa program kerja tidak berjalan sesuai rencana dan mendapat evaluasi negatif dari manajemen. Sikap 'Saya Fight' yang paling tepat ditunjukkan seorang supervisor dalam situasi ini adalah...",
+    c:["Diam dan menunggu kondisi membaik dengan sendirinya sebelum mengambil langkah","Tetap hadir dengan energi penuh, ajak tim evaluasi apa yang bisa diperbaiki, dan mulai langkah berikutnya bersama","Naikkan target agar tim terdorong bekerja lebih keras","Kurangi kegiatan sementara agar tim tidak semakin burnout"],
+    a:1, exp:"Fight bukan hanya soal diri sendiri — seorang leader yang fight tetap hadir, memimpin evaluasi tanpa menyalahkan, dan menjaga energi tim tetap bergerak. Inilah perbedaan antara leader yang fight dan yang ikut terpuruk."
+  },
+  {
+    q:"Mana dari kondisi berikut yang paling tepat menggambarkan seseorang yang sedang menjalankan Mindset 'Saya Fight'?",
+    c:["Bekerja sangat keras tanpa henti meski tidak ada hasil yang terukur","Tetap mengambil langkah meski tidak nyaman dan tidak pasti, karena tujuan yang ingin dicapai lebih besar dari rasa takutnya","Tidak pernah mengeluh dan selalu terlihat bersemangat di depan tim","Menghindari risiko besar agar tidak mengalami kegagalan yang memalukan"],
+    a:1, exp:"'Saya Fight' bukan sekedar kerja keras atau terlihat semangat. Ini tentang keberanian mengambil langkah meski tidak nyaman — karena purpose-nya lebih besar dari ketakutannya. Fight sejati tampak saat kondisi paling berat."
+  },
+
+  // ── KAIZEN ──
+  {
+    q:"Apa yang paling tepat menggambarkan cara kerja prinsip Kaizen dalam pengembangan diri seorang karyawan baru?",
+    c:["Melakukan perubahan besar dan drastis sekaligus agar hasilnya terasa lebih signifikan","Memperbaiki satu hal kecil secara konsisten setiap hari hingga akumulasinya menjadi transformasi besar","Menunggu sampai benar-benar siap dan ahli sebelum mulai bergerak di lapangan","Meniru persis cara kerja top performer agar bisa langsung menyamai hasilnya"],
+    a:1, exp:"Kaizen = banyak langkah kecil yang berkelanjutan. Perbaiki satu kalimat opening hari ini. Follow up lebih cepat besok. Closing lebih percaya diri minggu depan. Akumulasi perbaikan kecil yang konsisten jauh lebih powerful dari satu perubahan besar yang tidak terjaga."
+  },
+  {
+    q:"Seorang karyawan berkata: \"Saya sudah bekerja keras setiap hari tapi performa saya tidak berkembang.\" Dari perspektif Kaizen, apa yang paling mungkin kurang?",
+    c:["Ia kurang motivasi dan butuh lebih banyak sesi coaching dari atasan","Ia rajin bekerja tapi tidak mengevaluasi dan memperbaiki cara kerjanya secara berkala","Ia butuh rekan kerja yang lebih kooperatif agar pekerjaannya lebih lancar","Ia membutuhkan tools atau sistem yang lebih canggih agar lebih produktif"],
+    a:1, exp:"Kaizen bukan hanya soal rajin — tapi rajin + refleksi + perbaikan. Kerja keras tanpa evaluasi adalah pengulangan kesalahan yang sama. Kaizen mengharuskan kita mengukur hasil, mengidentifikasi gap, dan memperbaiki secara rutin."
+  },
+  {
+    q:"Trainer meminta peserta menulis setiap minggu: satu hal yang sudah lebih baik dari minggu lalu, dan satu hal yang ingin diperbaiki minggu depan. Aktivitas ini paling mencerminkan penerapan mindset...",
+    c:["Saya Bisa","Saya Fight","Saya Kaizen","Fokus Hasil"],
+    a:2, exp:"Ini praktik Kaizen murni: refleksi rutin + identifikasi perbaikan kecil + komitmen satu langkah maju per periode. Kaizen bukan event besar — ini adalah habits mingguan yang dijalani secara konsisten."
+  },
+
+  // ── FOKUS HASIL ──
+  {
+    q:"Seorang karyawan setiap hari hadir paling awal, selalu ada di setiap rapat, dan rajin membalas semua pesan grup — namun output kerjanya jauh di bawah target. Dari perspektif Mindset Fokus Hasil, masalah utamanya adalah...",
+    c:["Ia kurang rajin dan perlu menambah jam kerjanya","Ia terlalu fokus pada aktivitas tanpa mengukur apakah aktivitas itu benar-benar menggerakkan hasil kerja yang diharapkan","Ia membutuhkan rekan kerja yang lebih supportif","Ia belum menguasai teknik manajemen waktu yang tepat"],
+    a:1, exp:"Sibuk ≠ produktif. Mindset Fokus Hasil mengharuskan audit: dari semua aktivitas hari ini, mana yang benar-benar menggerakkan output yang diharapkan? Energi harus diarahkan ke aktivitas yang menggerakkan jarum, bukan sekadar terlihat sibuk."
+  },
+  {
+    q:"Dalam evaluasi mingguan tim, pendekatan mana yang paling mencerminkan Mindset Fokus Hasil?",
+    c:["Menanyakan sudah berapa jam tim bekerja dalam seminggu","Menanyakan berapa banyak aktivitas yang sudah dilakukan: meeting, telepon, dan chat","Menanyakan hasil yang dicapai, aktivitas mana yang paling produktif, dan apa yang akan dioptimalkan minggu depan","Memberikan motivasi inspiratif agar semangat tim meningkat minggu berikutnya"],
+    a:2, exp:"Evaluasi berbasis Fokus Hasil mengukur OUTPUT (hasil dicapai), mengidentifikasi aktivitas yang produktif vs tidak produktif, dan merencanakan optimasi konkret. Bukan mengukur INPUT saja (jam kerja, jumlah aktivitas) atau sekadar memberikan semangat tanpa arah."
+  },
+  {
+    q:"Dua karyawan baru punya jam kerja yang sama setiap hari. Karyawan A mengisi waktunya dengan sebanyak mungkin aktivitas. Karyawan B memilih 3 tugas yang terbukti paling berdampak pada hasil kerjanya dan fokus di situ. Setelah 1 bulan, performa Karyawan B jauh lebih baik. Prinsip mindset apa yang paling menjelaskan perbedaan ini?",
+    c:["Saya Fight — Distributor B lebih pantang menyerah","Saya Kaizen — Distributor B lebih konsisten dalam perbaikan","Fokus Hasil — Distributor B memilih dan mengoptimalkan aktivitas yang benar-benar menggerakkan hasil","Saya Bisa — Distributor B lebih percaya diri dalam menjalankan aktivitasnya"],
+    a:2, exp:"Ini esensi Mindset Fokus Hasil: bukan soal banyaknya aktivitas, tapi ketepatan memilih aktivitas yang menggerakkan target. Distributor B mengukur, mengevaluasi, dan memfokuskan energi pada hal yang benar-benar menggerakkan jarum."
+  },
+
+  // ── 3 MINDSET TOXIC ──
+  {
+    q:"Setelah program kerja tim tidak mencapai target, seorang karyawan berkata: \"Ini karena sistemnya memang lambat dari sananya. Kalau sistemnya lebih baik, pasti hasilnya berbeda.\" Ini paling tepat dikategorikan sebagai...",
+    c:["Analisis yang valid dan perlu ditindaklanjuti segera","Mindset Toxic: Menyalahkan — memindahkan tanggung jawab ke faktor luar tanpa mengaudit faktor yang bisa dikontrol","Mindset Toxic: Pembenaran — membenarkan kondisi yang ada agar tidak perlu berubah","Feedback konstruktif yang membantu perbaikan ke depan"],
+    a:1, exp:"Menyalahkan sistem tanpa mengaudit kualitas proses dan tindakan sendiri adalah Mindset Toxic Blame. Bahayanya: orang yang menyalahkan tidak punya dorongan untuk memperbaiki apa yang sebenarnya bisa ia kontrol."
+  },
+  {
+    q:"Seorang karyawan baru selalu punya alasan setiap kali belum menyelesaikan tugasnya: 'lagi banyak kerjaan lain', 'belum siap', 'nanti saja kalau sudah lebih paham sistemnya'. Mindset Toxic apa yang paling dominan dan bagaimana membedakannya dari hambatan nyata?",
+    c:["Menyalahkan — ia menyalahkan kondisi dan beban kerja yang terlalu berat","Alasan — ia mencari justifikasi untuk tidak bertindak; uji: jika performanya dinilai hari ini, apakah alasan itu masih berlaku?","Pembenaran — ia membenarkan bahwa menunda adalah keputusan yang strategis","Ini bukan mindset toxic, hanya masalah manajemen waktu biasa"],
+    a:1, exp:"Ini Mindset Toxic Alasan (Excuse). Cara membedakan dari hambatan nyata: gunakan 'Life or Death Test' — jika hidup bergantung pada tindakan ini hari ini, apakah alasannya masih ada? Kalau jawabannya tidak, itu bukan hambatan — itu alasan yang dipilih."
+  },
+  {
+    q:"Manakah dari situasi berikut yang paling menunjukkan seseorang menggabungkan ketiga Mindset Toxic sekaligus?",
+    c:["\"Performa saya bulan ini kurang karena cara kerja saya masih perlu diperbaiki.\"","\"Saya perlu lebih banyak latihan sebelum bisa konsisten mencapai target.\"","\"Tugasnya memang terlalu berat (blame), workload lagi menumpuk dari semua divisi (excuse), dan karyawan baru memang wajar belum bisa capai target di bulan pertama (justification).\"","\"Hasil bulan ini kurang, saya akan evaluasi cara kerja saya minggu ini.\""],
+    a:2, exp:"Jawaban C menggabungkan tiga Toxic sekaligus: Blame (tugas terlalu berat), Excuse (workload menumpuk), Justification (karyawan baru wajar belum bisa). Kombinasi ini berbahaya karena terdengar masuk akal, padahal sepenuhnya menghindari tanggung jawab atas hasil sendiri."
+  }
+];
+
+// STATE
+let userName='', questions=[], currentIdx=0, score=0;
+let answers=[], timerInt=null, secondsLeft=600, answered=false, timedOut=false;
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function shuffle(a){
+  const b=[...a];
+  for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}
+  return b;
+}
+function fmt(s){ return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
+
+function checkPassword(){
+  const v=document.getElementById('pw-input').value;
+  if(v===PASS){ showScreen('screen-intro'); }
+  else{
+    const e=document.getElementById('pw-error');
+    e.textContent='✗ Kode akses salah. Coba lagi.';
+    document.getElementById('pw-input').value='';
+    setTimeout(()=>e.textContent='',3000);
+  }
+}
+
+function startQuiz(){
+  const n=document.getElementById('name-input').value.trim();
+  if(!n){document.getElementById('name-input').focus();return;}
+  userName=n;
+  document.getElementById('hdr-name').textContent=userName;
+  questions=shuffle(BANK).map(q=>{
+    const idx=q.c.map((text,i)=>({text,orig:i}));
+    const sh=shuffle(idx);
+    return{q:q.q, c:sh.map(x=>x.text), a:sh.findIndex(x=>x.orig===q.a), exp:q.exp};
+  });
+  currentIdx=0; score=0; answers=[]; secondsLeft=600; timedOut=false;
+  showScreen('screen-quiz');
+  startTimer(); renderQ();
+}
+
+function startTimer(){
+  clearInterval(timerInt); updateTimer();
+  timerInt=setInterval(()=>{
+    secondsLeft--; updateTimer();
+    if(secondsLeft<=0){clearInterval(timerInt);timedOut=true;endQuiz();}
+  },1000);
+}
+function updateTimer(){
+  const el=document.getElementById('timer-display');
+  el.textContent=fmt(secondsLeft);
+  secondsLeft<=60?el.classList.add('warning'):el.classList.remove('warning');
+}
+
+function renderQ(){
+  const q=questions[currentIdx]; answered=false;
+  document.getElementById('q-counter').textContent=`Soal ${currentIdx+1} dari ${questions.length}`;
+  document.getElementById('q-tag').textContent=`SOAL #${currentIdx+1}`;
+  document.getElementById('q-text').textContent=q.q;
+  const list=document.getElementById('choices-list');
+  list.innerHTML='';
+  ['A','B','C','D'].forEach((l,i)=>{
+    const btn=document.createElement('button');
+    btn.className='choice-btn';
+    btn.innerHTML=`<span class="choice-letter">${l}</span><span>${q.c[i]}</span>`;
+    btn.onclick=()=>pick(i,btn);
+    list.appendChild(btn);
+  });
+  const fb=document.getElementById('feedback-box');
+  fb.style.display='none'; fb.className='feedback-box';
+  document.getElementById('btn-next').style.display='none';
+  document.getElementById('prog-fill').style.width=(currentIdx/questions.length*100)+'%';
+  document.getElementById('prog-text').textContent=`${currentIdx} / ${questions.length}`;
+}
+
+function pick(idx,btn){
+  if(answered)return; answered=true;
+  const q=questions[currentIdx];
+  const btns=document.querySelectorAll('.choice-btn');
+  btns.forEach(b=>b.disabled=true);
+  const ok=idx===q.a;
+  if(ok)score++;
+  btns[q.a].classList.add('correct');
+  if(!ok)btn.classList.add('wrong');
+  const fb=document.getElementById('feedback-box');
+  fb.style.display='block';
+  fb.className=ok?'feedback-box correct':'feedback-box wrong';
+  fb.innerHTML=ok?`<strong>✓ Benar!</strong> ${q.exp}`:`<strong>✗ Belum tepat.</strong> ${q.exp}`;
+  answers.push({q:q.q, chosen:q.c[idx], correct:q.c[q.a], ok});
+  const nb=document.getElementById('btn-next');
+  nb.style.display='inline-block';
+  nb.textContent=currentIdx+1<questions.length?'Lanjut →':'Lihat Hasil →';
+}
+
+function nextQuestion(){
+  currentIdx++;
+  if(currentIdx>=questions.length)endQuiz();
+  else{renderQ();window.scrollTo(0,0);}
+}
+
+function endQuiz(){
+  clearInterval(timerInt); showScreen('screen-result');
+  const pct=Math.round(score/questions.length*100);
+  document.getElementById('result-score').textContent=pct;
+  document.getElementById('res-correct').textContent=score;
+  document.getElementById('res-wrong').textContent=questions.length-score;
+  document.getElementById('res-time').textContent=fmt(Math.max(0,secondsLeft));
+  if(timedOut)document.getElementById('timeout-banner').style.display='block';
+  let emoji,msg,sub;
+  if(pct>=90){emoji='🏆';msg='Mindset Champion!';sub=`Luar biasa, ${userName}! Anda benar-benar memahami fondasi mindset dan siap menerapkannya dalam pekerjaan sehari-hari.`;}
+  else if(pct>=75){emoji='🌟';msg='Hampir Sempurna!';sub=`${userName}, pemahaman Anda kuat. Review soal yang salah dan Anda siap menjadi trainer mindset yang efektif.`;}
+  else if(pct>=60){emoji='💪';msg='Terus Kaizen!';sub=`${userName}, fondasi sudah ada. Pelajari ulang konsep yang masih kabur — setiap iterasi adalah perbaikan.`;}
+  else{emoji='📚';msg='Pelajari Ulang Materinya';sub=`${userName}, kembali ke materi, internalisasi setiap prinsip, lalu uji lagi pemahaman Anda.`;}
+  document.getElementById('result-emoji').textContent=emoji;
+  document.getElementById('result-msg').textContent=msg;
+  document.getElementById('result-sub').textContent=sub;
+  const rl=document.getElementById('review-list');
+  rl.innerHTML='<div style="font-family:\'Syne\',sans-serif;font-weight:700;font-size:16px;color:var(--white);margin-bottom:16px;">Pembahasan Lengkap</div>';
+  answers.forEach((a,i)=>{
+    const el=document.createElement('div');
+    el.className='review-item';
+    el.innerHTML=`<div class="review-q">${i+1}. ${a.q}</div>
+      ${a.ok?`<div class="review-a ok">✓ ${a.chosen}</div>`
+             :`<div class="review-a err">✗ Anda pilih: ${a.chosen}</div>
+               <div class="review-a ok" style="margin-top:4px;">✓ Benar: ${a.correct}</div>`}`;
+    rl.appendChild(el);
+  });
+}
+
+function resetQuiz(){
+  document.getElementById('name-input').value='';
+  document.getElementById('timeout-banner').style.display='none';
+  document.getElementById('review-list').style.display='none';
+  showScreen('screen-intro');
+}
+function toggleReview(){
+  const rl=document.getElementById('review-list');
+  const btn=document.querySelector('.btn-retake');
+  const show=rl.style.display==='none';
+  rl.style.display=show?'block':'none';
+  btn.textContent=show?'Sembunyikan Pembahasan ▴':'Lihat Pembahasan ▾';
+}
+</script>
+</body>
+</html>
